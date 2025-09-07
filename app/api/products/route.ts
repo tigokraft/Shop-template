@@ -18,14 +18,21 @@ export async function POST(req: NextRequest) {
       categoryIds,
     } = body;
 
-    if (!sku || !slug || !name || !description || !price) {
+    if (
+      !sku ||
+      !slug ||
+      !name ||
+      !description ||
+      !price ||
+      !origin ||
+      !categoryIds
+    ) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // ✅ Create product in Prisma
     const product = await prisma.product.create({
       data: {
         sku,
@@ -60,7 +67,7 @@ export async function GET(req: NextRequest) {
     const take = parseInt(searchParams.get("show") || "12", 10);
     const skip = parseInt(searchParams.get("skip") || "0", 10);
     const category = searchParams.get("category");
-    const discount = parseInt(searchParams.get("discount") || "0", 10);
+    const discount = searchParams.get("discount");
     const priceTo = Number(searchParams.get("from") || "0");
     const active = searchParams.get("active");
 
@@ -68,7 +75,7 @@ export async function GET(req: NextRequest) {
       where: {
         isActive: active ? active === "true" : undefined,
         categories: category ? { some: { slug: category } } : undefined,
-        price: { lte: priceTo },
+        ...(priceTo && priceTo > 0 ? { price: { lte: priceTo } } : {}),
       },
       include: {
         categories: true, // include category info
