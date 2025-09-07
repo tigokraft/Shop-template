@@ -3,7 +3,7 @@ import { prisma } from "@/lib/prisma"; // make sure you have a prisma client hel
 import { isAscii } from "buffer";
 import { NextURL } from "next/dist/server/web/next-url";
 
-export async function POST(req: Request) {
+export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
 
@@ -15,19 +15,17 @@ export async function POST(req: Request) {
       price,
       compareAtPrice,
       origin,
-      stock,
       categoryIds,
     } = body;
 
-    // Validate required fields
-    if (!sku || !slug || !name || !price) {
+    if (!sku || !slug || !name || !description || !price) {
       return NextResponse.json(
         { error: "Missing required fields" },
         { status: 400 }
       );
     }
 
-    // Create the product
+    // ✅ Create product in Prisma
     const product = await prisma.product.create({
       data: {
         sku,
@@ -37,7 +35,6 @@ export async function POST(req: Request) {
         price,
         compareAtPrice,
         origin,
-        stock: stock ?? 0,
         categories: categoryIds
           ? {
               connect: categoryIds.map((id: string) => ({ id })),
