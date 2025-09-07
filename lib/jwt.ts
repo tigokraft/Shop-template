@@ -1,14 +1,21 @@
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 
-const JWT_SECRET = process.env.JWT_SECRET!; // set this in .env
+const JWT_SECRET = process.env.JWT_SECRET!;
+if (!JWT_SECRET) throw new Error("JWT_SECRET not set in .env");
 
-export function signJwt(payload: object, expiresIn = "7d") {
+export interface AuthPayload extends JwtPayload {
+  id: string;
+  email: string;
+  role: string;
+}
+
+export function signJwt(payload: AuthPayload, expiresIn = "7d"): string {
   return jwt.sign(payload, JWT_SECRET, { expiresIn });
 }
 
-export function verifyJwt<T>(token: string): T | null {
+export function verifyJwt(token: string): AuthPayload | null {
   try {
-    return jwt.verify(token, JWT_SECRET) as T;
+    return jwt.verify(token, JWT_SECRET) as AuthPayload;
   } catch {
     return null;
   }
