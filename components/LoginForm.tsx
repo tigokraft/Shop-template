@@ -82,6 +82,12 @@ export function LoginForm({
             </a>
           </div>
           <Input id="password" name="password" type="password" required />
+          <a
+            href="/account/register"
+            className="text-sm underline-offset-4 hover:underline hover:text-neutral-100 text-neutral-400"
+          >
+            Don't have an account?
+          </a>
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>

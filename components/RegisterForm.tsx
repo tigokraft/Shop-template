@@ -53,9 +53,9 @@ export function LoginForm({
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
-        <h1 className="text-2xl font-bold">Login to your account</h1>
+        <h1 className="text-2xl font-bold">Register your account</h1>
         <p className="text-muted-foreground text-sm text-balance">
-          Enter your email below to login to your account
+          Enter your information below
         </p>
       </div>
 
@@ -81,6 +81,12 @@ export function LoginForm({
             <Label htmlFor="password">Repeat password</Label>
           </div>
           <Input id="rpassword" name="rpassword" type="password" required />
+          <a
+            href="/account/login"
+            className="text-sm underline-offset-4 hover:underline hover:text-neutral-100 text-neutral-400"
+          >
+            Already got an account?
+          </a>
         </div>
 
         <Button type="submit" className="w-full" disabled={loading}>
