@@ -1,4 +1,5 @@
 import { GalleryVerticalEnd } from "lucide-react";
+import Image from "next/image";
 
 import { LoginForm } from "@/components/LoginForm";
 
@@ -11,7 +12,7 @@ export default function LoginPage() {
             <div className="bg-primary text-primary-foreground flex size-6 items-center justify-center rounded-md">
               <GalleryVerticalEnd className="size-4" />
             </div>
-            Acme Inc.
+            Vexo Shop
           </a>
         </div>
         <div className="flex flex-1 items-center justify-center">
@@ -21,10 +22,12 @@ export default function LoginPage() {
         </div>
       </div>
       <div className="bg-muted relative hidden lg:block">
-        <img
-          src="/placeholder.svg"
-          alt="Image"
-          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.2] dark:grayscale"
+        <Image
+          src="/login-side.jpg"
+          alt="login side image"
+          width={4096}
+          height={3112}
+          className="absolute inset-0 h-full w-full object-cover dark:brightness-[0.5] dark:grayscale"
         />
       </div>
     </div>
