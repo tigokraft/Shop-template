@@ -79,6 +79,8 @@ export async function GET(req: NextRequest) {
       },
       include: {
         categories: true, // include category info
+        inventory: true,
+        discounts: true,
       },
       take,
       skip,
