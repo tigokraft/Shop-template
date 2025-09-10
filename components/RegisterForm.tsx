@@ -20,6 +20,7 @@ export function LoginForm({
 
     const formData = new FormData(e.currentTarget);
     const email = formData.get("email")?.toString() || "";
+    const name = formData.get("name")?.toString() || "";
     const password = formData.get("password")?.toString() || "";
 
     try {
@@ -60,6 +61,17 @@ export function LoginForm({
       </div>
 
       <div className="grid gap-6">
+        <div className="grid gap-3">
+          <Label htmlFor="name">Name</Label>
+          <Input
+            id="name"
+            name="name"
+            type="text"
+            placeholder="John Doe"
+            required
+          />
+        </div>
+
         <div className="grid gap-3">
           <Label htmlFor="email">Email</Label>
           <Input
