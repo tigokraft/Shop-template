@@ -4,53 +4,85 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { useTransition } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { signUp } from "@/server/users"; // <-- your better-auth wrapper
 
-export function LoginForm({
+/* ------------------------------------------------------------------ */
+/* 1. Schema (single source of truth)                                 */
+/* ------------------------------------------------------------------ */
+const schema = z
+  .object({
+    name: z.string().min(2, "Name is too short"),
+    email: z.string().email("Invalid e-mail"),
+    password: z
+      .string()
+      .regex(
+        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/,
+        "≥ 8 chars, 1 upper, 1 lower, 1 number"
+      ),
+    rpassword: z.string(),
+  })
+  .refine((d) => d.password === d.rpassword, {
+    message: "Passwords do not match",
+    path: ["rpassword"],
+  });
+
+type Form = z.infer<typeof schema>;
+
+/* ------------------------------------------------------------------ */
+/* 2. Component                                                       */
+/* ------------------------------------------------------------------ */
+export function RegisterForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setError(null);
-    setLoading(true);
+  const {
+    register,
+    handleSubmit,
+    setError,
+    formState: { errors },
+    watch,
+  } = useForm<Form>({ resolver: zodResolver(schema) });
 
-    const formData = new FormData(e.currentTarget);
-    const email = formData.get("email")?.toString() || "";
-    const name = formData.get("name")?.toString() || "";
-    const password = formData.get("password")?.toString() || "";
+  const password = watch("password");
 
-    try {
-      const res = await fetch("/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await res.json();
-
-      if (!res.ok) {
-        setError(data.error || "Something went wrong");
-      } else if (data.token) {
-        // Store JWT in localStorage (or cookies)
-        localStorage.setItem("token", data.token);
-        // Optional: redirect to dashboard
-        window.location.href = "/dashboard";
+  /* ------------------------------------------------------------ */
+  /* 3. Submit                                                    */
+  /* ------------------------------------------------------------ */
+  const onSubmit = handleSubmit((data) => {
+    startTransition(async () => {
+      try {
+        await signUp(data.email, data.password, data.name); // your fn
+        router.push("/dashboard"); // soft navigation
+        router.refresh(); // revalidate server layouts
+      } catch (err: any) {
+        setError("root", { message: err.message ?? "Registration failed" });
       }
-    } catch (err) {
-      setError("Network error");
-    } finally {
-      setLoading(false);
-    }
-  };
+    });
+  });
+
+  /* ------------------------------------------------------------ */
+  /* 4. Password-strength visual                                  */
+  /* ------------------------------------------------------------ */
+  const strength =
+    password && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)
+      ? "strong"
+      : password
+      ? "weak"
+      : "none";
 
   return (
     <form
       className={cn("flex flex-col gap-6", className)}
-      onSubmit={handleSubmit}
+      onSubmit={onSubmit}
+      noValidate
       {...props}
     >
       <div className="flex flex-col items-center gap-2 text-center">
@@ -61,51 +93,80 @@ export function LoginForm({
       </div>
 
       <div className="grid gap-6">
-        <div className="grid gap-3">
+        {/* Name */}
+        <div className="grid gap-2">
           <Label htmlFor="name">Name</Label>
           <Input
             id="name"
-            name="name"
             type="text"
             placeholder="John Doe"
-            required
+            autoComplete="name"
+            {...register("name")}
           />
+          {errors.name && (
+            <p className="text-red-500 text-xs">{errors.name.message}</p>
+          )}
         </div>
 
-        <div className="grid gap-3">
+        {/* Email */}
+        <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
-            name="email"
             type="email"
             placeholder="m@example.com"
-            required
+            autoComplete="email"
+            {...register("email")}
           />
+          {errors.email && (
+            <p className="text-red-500 text-xs">{errors.email.message}</p>
+          )}
         </div>
 
-        <div className="grid gap-3">
-          <div className="flex items-center">
-            <Label htmlFor="password">Password</Label>
-          </div>
-          <Input id="password" name="password" type="password" required />
+        {/* Password */}
+        <div className="grid gap-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="new-password"
+            {...register("password")}
+          />
+          {errors.password && (
+            <p className="text-red-500 text-xs">{errors.password.message}</p>
+          )}
+        </div>
 
-          <div className="flex items-center">
-            <Label htmlFor="password">Repeat password</Label>
-          </div>
-          <Input id="rpassword" name="rpassword" type="password" required />
+        {/* Repeat password */}
+        <div className="grid gap-2">
+          <Label htmlFor="rpassword">Repeat password</Label>
+          <Input
+            id="rpassword"
+            type="password"
+            autoComplete="new-password"
+            {...register("rpassword")}
+          />
+          {errors.rpassword && (
+            <p className="text-red-500 text-xs">{errors.rpassword.message}</p>
+          )}
           <a
             href="/account/login"
-            className="text-sm underline-offset-4 hover:underline hover:text-neutral-100 text-neutral-400"
+            className="text-sm underline-offset-4 hover:underline text-neutral-400"
           >
             Already got an account?
           </a>
         </div>
 
-        <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Logging in..." : "Login"}
+        <Button type="submit" className="w-full" disabled={isPending}>
+          {isPending ? "Creating account…" : "Register"}
         </Button>
 
-        {error && <p className="text-red-500 text-center">{error}</p>}
+        {/* aria-live region for async errors */}
+        {errors.root && (
+          <p className="text-red-500 text-center text-sm" aria-live="polite">
+            {errors.root.message}
+          </p>
+        )}
       </div>
     </form>
   );

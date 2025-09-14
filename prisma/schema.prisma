@@ -25,8 +25,29 @@ model User {
   orders         Order[]
   addresses      Address[]
   paymentMethods PaymentMethod[]
+  Account        Account[]
 
   @@map("user")
+}
+
+model Account {
+  id                   String    @id @default(cuid())
+  userId               String
+  accountId            String
+  providerId           String
+  accessToken          String?
+  refreshToken         String?
+  accessTokenExpiresAt DateTime?
+  scope                String?
+  password             String?
+
+  createdAt DateTime @default(now()) // <-- add
+  updatedAt DateTime @updatedAt // <-- add
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerId, accountId])
+  @@map("account")
 }
 
 model Session {
