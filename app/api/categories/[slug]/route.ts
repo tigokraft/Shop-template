@@ -37,3 +37,49 @@ export async function GET(request: NextRequest, { params }: Params) {
     );
   }
 }
+
+export async function DELETE(request: NextRequest, { params }: Params) {
+  const { slug } = params;
+
+  try {
+    const category = await prisma.category.delete({
+      where: { slug },
+    });
+    return NextResponse.json(category, { status: 204 });
+  } catch (err: any) {
+    console.error("Error deleting category:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error", errorDetails: err.message },
+      { status: 500 }
+    );
+  }
+}
+
+export async function PUT(request: NextRequest, { params }: Params) {
+  const { slug } = params;
+
+  try {
+    const body = await request.json();
+    const { name, newSlug } = body;
+
+    if (!name || !newSlug) {
+      return NextResponse.json(
+        { error: "Missing required fields" },
+        { status: 400 }
+      );
+    }
+
+    const category = await prisma.category.update({
+      where: { slug },
+      data: { name, slug: newSlug },
+    });
+
+    return NextResponse.json(category, { status: 200 });
+  } catch (err: any) {
+    console.error("Error updating category:", err);
+    return NextResponse.json(
+      { error: "Internal Server Error", errorDetails: err.message },
+      { status: 500 }
+    );
+  }
+}
