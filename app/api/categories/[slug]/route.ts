@@ -74,7 +74,7 @@ export async function PUT(request: NextRequest, { params }: Params) {
       data: { name, slug: newSlug },
     });
 
-    return NextResponse.json(category, { status: 200 });
+    return NextResponse.json(category, { status: 201 });
   } catch (err: any) {
     console.error("Error updating category:", err);
     return NextResponse.json(
