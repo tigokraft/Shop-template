@@ -33,12 +33,10 @@ export async function POST(req: NextRequest) {
 
 export async function GET(req: NextRequest) {
   try {
-    const { searchParams } = req.nextUrl;
-    const name = searchParams.get("name");
-
     const categories = await prisma.category.findMany({
       orderBy: { name: "asc" },
     });
+    return NextResponse.json(categories, { status: 200 });
   } catch (err: any) {
     console.error("Error fetching categories:", err);
     return NextResponse.json(
