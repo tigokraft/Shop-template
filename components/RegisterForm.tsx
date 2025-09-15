@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { signUp } from "@/server/users"; // <-- your better-auth wrapper
+import { authClient } from "@/lib/auth-client";
 
 /* ------------------------------------------------------------------ */
 /* 1. Schema (single source of truth)                                 */
@@ -60,6 +61,9 @@ export function RegisterForm({
     startTransition(async () => {
       try {
         await signUp(data.email, data.password, data.name); // your fn
+        await authClient.twoFactor.enable({
+          password: data.password,
+        });
         router.push("/dashboard"); // soft navigation
         router.refresh(); // revalidate server layouts
       } catch (err: any) {
@@ -75,8 +79,8 @@ export function RegisterForm({
     password && /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/.test(password)
       ? "strong"
       : password
-      ? "weak"
-      : "none";
+        ? "weak"
+        : "none";
 
   return (
     <form

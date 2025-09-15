@@ -10,6 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { signIn } from "@/server/users"; // <-- your better-auth wrapper
+import { authClient } from "@/lib/auth-client";
 
 /* ------------------------------------------------------------------ */
 /* 1. Schema                                                          */

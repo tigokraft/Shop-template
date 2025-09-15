@@ -3,6 +3,7 @@ import { prismaAdapter } from "better-auth/adapters/prisma";
 import { PrismaClient } from "@prisma/client";
 import { nextCookies } from "better-auth/next-js";
 import { Resend } from "resend";
+import { twoFactor } from "better-auth/plugins/two-factor";
 
 // 👇 Import your React email component
 import { EmailAuth } from "@/components/emails/EmailAuth";
@@ -36,5 +37,5 @@ export const auth = betterAuth({
   database: prismaAdapter(prisma, {
     provider: "postgresql",
   }),
-  plugins: [nextCookies()],
+  plugins: [nextCookies(), twoFactor()],
 });
